@@ -4,7 +4,6 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const app = express();
 app.use(express.json());
 
-// Initialize the Gemini SDK
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.post('/ask', async (req, res) => {
@@ -15,7 +14,10 @@ app.post('/ask', async (req, res) => {
     }
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        // FIX: Using "gemini-pro" is the most stable way to call the model 
+        // if "gemini-1.5-flash" is throwing 404s on your current SDK version
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" }); 
+        
         const result = await model.generateContent(message);
         const response = await result.response;
         const text = response.text();
@@ -27,7 +29,6 @@ app.post('/ask', async (req, res) => {
     }
 });
 
-// Use Render's port or default to 10000
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
