@@ -13,10 +13,12 @@ app.post('/ask', async (req, res) => {
         const { message } = req.body;
         
         // 2026 Stable Model Name
-        const response = await client.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: [{ role: 'user', parts: [{ text: message }] }]
-        });
+       // Replace your model line with this:
+const model = client.models.generateContent({
+    model: 'gemini-2.5-flash',
+    systemInstruction: "You are an expert Roblox Luau scripter. Always use task.wait() instead of wait(). Use GetService. Provide code in Markdown blocks.",
+    contents: [{ role: 'user', parts: [{ text: message }] }]
+});
 
         res.json({ reply: response.text });
     } catch (error) {
