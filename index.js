@@ -9,8 +9,22 @@ app.use(express.json());
 const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 app.post('/ask', async (req, res) => {
+    const { message } = req.body;
+
     try {
-        const { message } = req.body;
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        
+        // Change: Ensure we wait for the result properly
+        const result = await model.generateContent(message);
+        const response = await result.response; // Now 'response' is defined!
+        const text = response.text();
+
+        res.json({ reply: text });
+    } catch (error) {
+        console.error("Gemini Error:", error);
+        res.status(500).json({ reply: "AI Error: " + error.message });
+    }
+});
         
         // 2026 Stable Model Name
        // Replace your model line with this:
