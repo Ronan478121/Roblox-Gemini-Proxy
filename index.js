@@ -1,24 +1,24 @@
 const express = require('express');
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+// We are now using the NEW 2026 SDK
+const { GoogleGenAI } = require("@google/genai");
 
 const app = express();
 app.use(express.json());
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// Initialize the new client
+const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 app.post('/ask', async (req, res) => {
     try {
         const { message } = req.body;
-        console.log("Processing request for model: gemini-3-flash"); // Safety Log
         
-        // Using the 2026 standard model
-        const model = genAI.getGenerativeModel({ model: "gemini-3-flash" });
+        // 2026 Stable Model Name
+        const response = await client.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: [{ role: 'user', parts: [{ text: message }] }]
+        });
 
-        const result = await model.generateContent(message);
-        const response = await result.response;
-        const text = response.text();
-
-        res.json({ reply: text });
+        res.json({ reply: response.text });
     } catch (error) {
         console.error("SERVER ERROR:", error.message);
         res.status(500).json({ reply: "AI Error: " + error.message });
