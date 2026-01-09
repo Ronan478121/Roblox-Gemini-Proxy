@@ -4,28 +4,24 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const app = express();
 app.use(express.json());
 
-// Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.post('/ask', async (req, res) => {
     try {
         const { message } = req.body;
+        console.log("Processing request for model: gemini-3-flash"); // Safety Log
         
-        // System Prompt: Tells the AI to behave like a Roblox expert
-        const model = genAI.getGenerativeModel({ 
-            model: "gemini-1.5-flash",
-            systemInstruction: "You are a Roblox Studio Luau expert. Provide only functional code or brief instructions. Avoid long explanations unless asked."
-        });
+        // Using the 2026 standard model
+        const model = genAI.getGenerativeModel({ model: "gemini-3-flash" });
 
         const result = await model.generateContent(message);
         const response = await result.response;
         const text = response.text();
 
-        // Send the AI response back to Roblox
         res.json({ reply: text });
     } catch (error) {
-        console.error("Error:", error);
-        res.status(500).json({ reply: "Error: Could not reach the AI." });
+        console.error("SERVER ERROR:", error.message);
+        res.status(500).json({ reply: "AI Error: " + error.message });
     }
 });
 
