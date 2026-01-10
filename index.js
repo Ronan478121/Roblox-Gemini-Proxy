@@ -8,10 +8,13 @@ app.post('/ask', async (req, res) => {
     const { message } = req.body;
     if (!message) return res.status(400).json({ reply: "No prompt." });
 
-    // We call the STABLE v1 API directly via URL
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+    // MODEL CHANGE: Switching from gemini-1.5-flash to gemini-pro
+    // gemini-pro is the most widely supported model for older API keys
+    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${API_KEY}`;
 
     try {
+        console.log("Calling URL:", url.replace(API_KEY, "HIDDEN_KEY")); // Log for safety
+
         const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -24,15 +27,18 @@ app.post('/ask', async (req, res) => {
 
         const data = await response.json();
 
-        // Check if Google returned an error
         if (data.error) {
             console.error("Google API Error:", data.error);
             return res.status(500).json({ reply: "Google Error: " + data.error.message });
         }
 
-        // Extract the text from the specific Google response format
-        const aiText = data.candidates[0].content.parts[0].text;
-        res.json({ reply: aiText });
+        // Standard response path
+        if (data.candidates && data.candidates[0].content) {
+            const aiText = data.candidates[0].content.parts[0].text;
+            res.json({ reply: aiText });
+        } else {
+            res.status(500).json({ reply: "Unexpected API response format." });
+        }
 
     } catch (error) {
         console.error("Fetch Error:", error);
@@ -42,5 +48,5 @@ app.post('/ask', async (req, res) => {
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-    console.log(`✅ Direct Fetch Proxy Active on ${PORT}`);
+    console.log(`✅ Proxy running gemini-pro on ${PORT}`);
 });
